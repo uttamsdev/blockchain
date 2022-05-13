@@ -13,5 +13,24 @@ class Block {
     }
 }
 
+
+//crating block chain
+class Blockchain{
+    constructor() {
+        this.cain = []; //empty array in which array every block will be inserted
+
+
+    }
+
+    addBlock(newBlock) {
+        this.cain.push(newBlock);
+    }
+}
+
+const josscoin = new Blockchain();
 const block = new Block('2019-01-01',{ amount: 5}, 'ABCD');
 console.log(block);
+
+josscoin.addBlock(block); //block will be added into Blockchain
+
+console.log(josscoin);
