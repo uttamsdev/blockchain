@@ -1,5 +1,8 @@
 const sha256 = require('crypto-js/sha256'); //for creating hash
 
+/*--------------------------------------------------------------------------------------------------------------------------------------------
+                                            ------ START OF BLOCK CLASS -----
+--------------------------------------------------------------------------------------------------------------------------------------------*/
 //creating block
 class Block {
     constructor(timestamp, data, previousHash = ""){ //previous has default value empty string
@@ -7,18 +10,23 @@ class Block {
         this.data = data;
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
+        this.nonce = 0;
     }
 
+    nineBlock(difficulty){
+        //ei function er kaj jotokkhon porjonto valid block hash na pai totokkhon porjonto hash calculat kora
+        while(this.hash.substring(0, difficulty) !== Array(difficulty+1).join("0")){
+            //condition in white (this.hash.substring(0, difficulty) !=="00000") // jotokkhon hash er first 5 ta char 00000 na hoi totokkhon hash calcualte korbe. 00000.. diye start hash ei valid hash hisebe nibo
+            this.nonce++;
+            this.hash = this.calculateHash();
+        }
+        console.log('Mining Done' + this.hash);
+    }
     //hashCreating function
     calculateHash() {
-        return sha256(this.timestamp + JSON.stringify(this.data )+ this.previousHash).toString(); // ensure making string all element && converting hash to string
+        return sha256(this.timestamp + JSON.stringify(this.data )+ this.previousHash + this.nonce).toString(); // ensure making string all element && converting hash to string
     }
 }
-/*------------------------------ ---------------------------End of Block Class --------------------------------------------------------------
-                                                             END OF BLOCK CLASS
--------------------------------------------------------------------------------------------------------------------------------------------*/
-
-
 
 /*--------------------------------------------------------------------------------------------------------------------------------------------
                                             ------ START OF BLOCKCHAIN CLASS -----
@@ -45,6 +53,9 @@ class Blockchain{
         this.cain.push(newBlock);
     }
 
+/*-------------------------------------------------------------------------------------------------------------------------------------------
+                                        --------- CHECKING THE BLOCK IS VALID OR NOT ----------
+--------------------------------------------------------------------------------------------------------------------------------------------*/
     //checking the block is valid or not
     isBlockChainValid() {
         for(let i = 1;  i < this.cain.length; i++){ //starting from 1 because we will not check for genesis block
