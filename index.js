@@ -48,6 +48,7 @@ class Blockchain{
         this.cain = [this.generateGenesisBlock()]; //empty array in which array every block will be inserted , chain e contain genenis block first
         this.difficulty = 5; //assuming difficulty 2
         this.pendingTransactions = [];  //block ta jokn mining hobe tokn transaction hobe er age pending thakbe
+        this.miningReward = 10; //each sucessful mining will get 10 josscoin to minor
     }
 
     //generate genesisBlock
@@ -66,11 +67,13 @@ class Blockchain{
     }
 
     //mine pending transaction
-    minePendingTransaction() {
+    minePendingTransaction(minerAddress) {
         let block = new Block(Date.now(), this.pendingTransactions);
         block.mineBlock(this.difficulty);
         this.cain.push(block); //push after mine
-        this.pendingTransactions = []; //empty pending transaction after push 
+        this.pendingTransactions = [
+            new Transaction(null, minerAddress, this.miningReward)
+        ]; //empty pending transaction after push 
     }
 
     // addBlock(newBlock) {
@@ -121,7 +124,8 @@ const josscoin = new Blockchain();
 josscoin.createTransaction(new Transaction('address1','address2',100)); // initial address balance 0 
 josscoin.createTransaction(new Transaction('address2','address1',50)); //transaction gula process hobe jokhon block ta mine kora hobe.
 
-josscoin.minePendingTransaction();
-console.log(josscoin.getBalanceOfAddress('address1'));
-console.log(josscoin.getBalanceOfAddress('address2'));
+josscoin.minePendingTransaction('uttam-saha-address');
+console.log(josscoin.getBalanceOfAddress('uttam-saha-address'));
+josscoin.minePendingTransaction('uttam-saha-address');
+console.log(josscoin.getBalanceOfAddress('uttam-saha-address'));
 // console.log(josscoin);
