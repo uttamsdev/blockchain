@@ -98,11 +98,30 @@ class Blockchain{
             return true; //else return ture;
         }
     }
+
+    getBalanceOfAddress(address){
+        let balance = 0;
+        for(const block of this.cain){
+            for(const trans of block.transactions){
+                if(trans.fromAddress === address){
+                    //sender 
+                    balance -= trans.amount;
+                }
+                if(trans.toAddress === address){
+                    //receiever
+                    balance += trans.amount;
+                }
+            }
+        }
+        return balance;
+    }
 }
 
 const josscoin = new Blockchain();
-josscoin.createTransaction(new Transaction('address1','address2',100));
+josscoin.createTransaction(new Transaction('address1','address2',100)); // initial address balance 0 
 josscoin.createTransaction(new Transaction('address2','address1',50)); //transaction gula process hobe jokhon block ta mine kora hobe.
 
 josscoin.minePendingTransaction();
-console.log(josscoin);
+console.log(josscoin.getBalanceOfAddress('address1'));
+console.log(josscoin.getBalanceOfAddress('address2'));
+// console.log(josscoin);
