@@ -14,8 +14,15 @@ class Block {
         return sha256(this.timestamp + JSON.stringify(this.data )+ this.previousHash).toString(); // ensure making string all element && converting hash to string
     }
 }
+/*------------------------------ ---------------------------End of Block Class --------------------------------------------------------------
+                                                             END OF BLOCK CLASS
+-------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
+
+/*--------------------------------------------------------------------------------------------------------------------------------------------
+                                            ------ START OF BLOCKCHAIN CLASS -----
+--------------------------------------------------------------------------------------------------------------------------------------------*/
 //crating block chain
 class Blockchain{
     constructor() {
@@ -37,12 +44,32 @@ class Blockchain{
        newBlock.hash = newBlock.calculateHash();
         this.cain.push(newBlock);
     }
+
+    //checking the block is valid or not
+    isBlockChainValid() {
+        for(let i = 1;  i < this.cain.length; i++){ //starting from 1 because we will not check for genesis block
+            const currentBlock = this.cain[i];
+            const previousBlock = this.cain[i-1];
+
+            if(currentBlock.hash !== currentBlock.calculateHash()){
+                return false;
+            }
+            if(currentBlock.previousHash !== previousBlock.hash){
+                return false;
+            } //if current block's previous hash not equal to previous block's hash then not valid return false
+            return true; //else return ture;
+        }
+    }
 }
 
 const josscoin = new Blockchain();
 const block = new Block('2019-01-01',{ amount: 5});
+const block2 = new Block('2019-01-01',{ amount: 5});
 // console.log(block);
 
 josscoin.addBlock(block); //block will be added into Blockchain
+// josscoin.addBlock(block2);
+console.log(josscoin.isBlockChainValid()); //true
 
-console.log(josscoin);
+josscoin.cain[1].data = 'HACKED';
+console.log(josscoin.isBlockChainValid()); //false because we changed the data
