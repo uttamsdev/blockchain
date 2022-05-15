@@ -1,4 +1,6 @@
 const sha256 = require('crypto-js/sha256'); //for creating hash
+const EC = require('elliptic').ec; 
+var ec = new EC('secp256k1');
 
 /*--------------------------------------------------------------------------------------------------------------------------------------------
                                             ------ START OF BLOCK CLASS -----
@@ -28,6 +30,15 @@ class Block {
     calculateHash() {
         return sha256(this.timestamp + JSON.stringify(this.transactions )+ this.previousHash + this.nonce).toString(); // ensure making string all element && converting hash to string
     }
+
+    hasValidTransactions() {
+        for(const tx of this.transactions){
+            if(!tx.isValid()){
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------------
@@ -41,6 +52,33 @@ class Block {
          this.toAddress = toAddress;
          this.amount = amount;
      }
+
+     calculateHash() {
+         return sha256(this.fromAddress + this.toAddress + this.amount).toString();
+     }
+
+
+     // adding signature to transaction to understand the transaction is valid or not
+     signTransaction(key){
+         if(key.getPublic('hex') !== this.fromAddress){ //checking public wallet is equal to from address or not
+             throw new Error('You do not have access');
+         }
+         const hashOfTransactions = this.calculateHash();
+         const signature = key.sign(hashOfTransactions, "base64");
+         this.signature = signature.toDER();
+
+     
+     }
+
+     isValid() {
+        if(this.fromAddress === null) true;
+        if(!this.signature || this.signature.length === 0){
+            throw new Error('No signature found');
+        }
+
+        const key = ec.keyFromPublic(this.fromAddress, 'hex'); // getting key
+       return key.verify(this.calculateHash(), this.signature)
+    }
  }
 //crating block chain
 class Blockchain{
@@ -62,7 +100,16 @@ class Blockchain{
     }
 
     //create transaction function
-    createTransaction(transaction){
+    addTransaction(transaction){
+        if(!transaction.fromAddress || !transaction.toAddress){
+            //transaction er from address and to address na thakle transaction ta add hobe na
+            throw new Error(' Cannot process transaction');
+        }
+
+        if(!transaction.isValid()){
+            throw new Error('Invalid transaction');
+            //transaction valid na hole
+        }
         this.pendingTransactions.push(transaction);
     }
 
@@ -72,16 +119,9 @@ class Blockchain{
         block.mineBlock(this.difficulty);
         this.cain.push(block); //push after mine
         this.pendingTransactions = [
-            new Transaction(null, minerAddress, this.miningReward)
+            new Transaction(null, minerAddress, this.miningReward) //miner will get reward
         ]; //empty pending transaction after push 
     }
-
-    // addBlock(newBlock) {
-    //     newBlock.previousHash = this.getLatestBlock().hash //setting new blocks previous hash
-    // //    newBlock.hash = newBlock.calculateHash();
-    //     newBlock.mineBlock(this.difficulty);
-    //     this.cain.push(newBlock);
-    // }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------
                                         --------- CHECKING THE BLOCK IS VALID OR NOT ----------
@@ -98,8 +138,12 @@ class Blockchain{
             if(currentBlock.previousHash !== previousBlock.hash){
                 return false;
             } //if current block's previous hash not equal to previous block's hash then not valid return false
-            return true; //else return ture;
+
+            if(!currentBlock.hasValidTransactions()){
+                return false;
+            }
         }
+        return true; //else return ture;
     }
 
     getBalanceOfAddress(address){
@@ -119,13 +163,9 @@ class Blockchain{
         return balance;
     }
 }
-
-const josscoin = new Blockchain();
-josscoin.createTransaction(new Transaction('address1','address2',100)); // initial address balance 0 
-josscoin.createTransaction(new Transaction('address2','address1',50)); //transaction gula process hobe jokhon block ta mine kora hobe.
-
-josscoin.minePendingTransaction('uttam-saha-address');
-console.log(josscoin.getBalanceOfAddress('uttam-saha-address'));
-josscoin.minePendingTransaction('uttam-saha-address');
-console.log(josscoin.getBalanceOfAddress('uttam-saha-address'));
-// console.log(josscoin);
+//exporting all class for use from another class
+module.exports = {
+    Block,
+    Transaction,
+    Blockchain
+}
