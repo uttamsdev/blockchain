@@ -84,7 +84,7 @@ class Block {
 class Blockchain{
     constructor() {
         this.cain = [this.generateGenesisBlock()]; //empty array in which array every block will be inserted , chain e contain genenis block first
-        this.difficulty = 5; //assuming difficulty 2
+        this.difficulty = 3; //assuming difficulty 2
         this.pendingTransactions = [];  //block ta jokn mining hobe tokn transaction hobe er age pending thakbe
         this.miningReward = 10; //each sucessful mining will get 10 josscoin to minor
     }
@@ -110,6 +110,14 @@ class Blockchain{
             throw new Error('Invalid transaction');
             //transaction valid na hole
         }
+
+        if(transaction.amount < 0){
+            throw new Error('Invalid transaction amount');
+        }
+        // if(transaction.amount > this.getBalanceOfAddress(transaction.fromAddress)){
+        //     //jei address theke amount send kora hocce tar j current amount ahce tar theke besi amount sent korte parbe na error dibe.
+        //     throw new Error("Not enough balance");
+        // }
         this.pendingTransactions.push(transaction);
     }
 
